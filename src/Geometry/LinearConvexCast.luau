@@ -23,8 +23,9 @@ local function fastLinearConvexCast(
 	local invA, invB = originA.Rotation:Inverse(), originB.Rotation:Inverse()
 
 	local SA0, SB0, V0 = originA.Position, originB.Position, originA.Position - originB.Position
+	V0 = V0:Dot(V0) < 1e-5 and Vector3.yAxis or V0
 	
-	local SA1, SB1, V1 = getABV(originA, marginA, invA, localSupportA, originB, marginB, invB, localSupportB, V0:Cross(rayDir):Cross(rayDir).Unit)
+	local SA1, SB1, V1 = getABV(originA, marginA, invA, localSupportA, originB, marginB, invB, localSupportB, rayDir)
 	if V0:Dot(V1:Cross(rayDir)) > 0 then
 		SA0, SB0, V0, SA1, SB1, V1 = SA1, SB1, V1, SA0, SB0, V0
 	end
