@@ -3,6 +3,8 @@
 ## Overview
 Fast Minkowski Shapecast is a fast linear convex shapecasting algorithm written in LuaU
 
+https://github.com/user-attachments/assets/313bd7fc-8829-4695-80e3-bc6b95493fe2
+
 ## Usage
 
 ```luau
@@ -25,6 +27,10 @@ if shapecastResult then
     print('Normal', shapecastResult.Normal)
 end
 ```
+
+## Limitations
+- Doesn't work with meshes or union operations
+- Doesn't work with terrain
 
 ## Example Place
 [Bouncy Spheres](https://www.roblox.com/games/140565669830337/FMShapecast-Bouncy-Spheres)
