@@ -27,4 +27,4 @@ end
 ```
 
 ## Example Place
-[Place Link](https://www.roblox.com/games/140565669830337/FMShapecast-Bouncy-Spheres)
+[Bouncy Spheres](https://www.roblox.com/games/140565669830337/FMShapecast-Bouncy-Spheres)
