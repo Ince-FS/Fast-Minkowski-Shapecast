@@ -75,7 +75,7 @@ local function fastLinearConvexCast(
 					s = v + w + x
 				end
 
-				return t, (u*originB.Position + v*SB0 + w*SB1 + x*SB2)/s, -n
+				return t, (u*originB.Position + v*SB0 + w*SB1 + x*SB2)/s, -n.Unit
 			end
 			
 			BestAlignment = Alignment
