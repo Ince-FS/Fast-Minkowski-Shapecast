@@ -8,8 +8,13 @@ local function getABV(
 	originB: CFrame, marginB: number, invB: CFrame, localSupportB: any,
 	n: Vector3
 ): (Vector3, Vector3, Vector3)
-	local rA, rB = invA*n, invB*-n
-	local SA, SB = originA*localSupportA(rA) + rA*marginA, originB*localSupportB(rB) + rB*marginB
+	local m = n:Dot(n) do
+		if m > 0 then
+			n /= m^0.5
+		end
+	end
+
+	local SA, SB = originA*localSupportA(invA*n) + n*marginA, originB*localSupportB(invB*(-n)) - n*marginB
 	return SA, SB, SA - SB
 end
 
@@ -17,26 +22,27 @@ local function fastLinearConvexCast(
 	originA: CFrame, marginA: number, localSupportA: any, directionA: Vector3,
 	originB: CFrame, marginB: number, localSupportB: any, directionB: Vector3
 ): (number?, Vector3?, Vector3?)
-	local rayDir = (directionA - directionB).Unit
+	local rayDir = directionA - directionB
 	if rayDir:Dot(rayDir) == 0 then return end
 
 	local invA, invB = originA.Rotation:Inverse(), originB.Rotation:Inverse()
 
-	local SA0, SB0, V0 = originA.Position, originB.Position, originA.Position - originB.Position
+	local SA0, SB0, V0 = getABV(originA, marginA, invA, localSupportA, originB, marginB, invB, localSupportB, originA.Position - originB.Position)
 	V0 = V0:Dot(V0) < 1e-5 and Vector3.yAxis or V0
-	
-	local SA1, SB1, V1 = getABV(originA, marginA, invA, localSupportA, originB, marginB, invB, localSupportB, rayDir)
+
+	local SA1, SB1, V1 = getABV(originA, marginA, invA, localSupportA, originB, marginB, invB, localSupportB, rayDir:Cross(rayDir:Cross(V0)))
 	if V0:Dot(V1:Cross(rayDir)) > 0 then
 		SA0, SB0, V0, SA1, SB1, V1 = SA1, SB1, V1, SA0, SB0, V0
 	end
 
+	local lasti, lastn = nil, nil
 	local SA2, SB2, V2 do
 		for _ = 0, MAX_ITERATIONS do
-			local n = (V1 - V0):Cross(rayDir).Unit
+			local n = (V1 - V0):Cross(rayDir)
 
 			SA2, SB2, V2 = getABV(originA, marginA, invA, localSupportA, originB, marginB, invB, localSupportB, n)
 			if n:Dot(V2) < 0 then return end
-			
+
 			local uv = V2:Cross(rayDir)
 			if V0:Dot(uv) < 0 then
 				SA1, SB1, V1 = SA2, SB2, V2
@@ -47,15 +53,18 @@ local function fastLinearConvexCast(
 			end
 		end
 	end
-
+	
 	local SA3, SB3, V3 do
+		local BestAlignment = 1/0
 		for I = 0, MAX_ITERATIONS do
-			local n = (V2 - V0):Cross(V1 - V0).Unit
+			local n = (V2 - V0):Cross(V1 - V0)
 			
 			SA3, SB3, V3 = getABV(originA, marginA, invA, localSupportA, originB, marginB, invB, localSupportB, n)
-			if (V3 - V0):Dot(n) < 1e-7*I then
+			
+			local Alignment = (V3 - V0):Dot(n)
+			if Alignment < 1e-6*I or math.abs(Alignment - BestAlignment) < 1e-12 then
 				local t = -V0:Dot(n)/rayDir:Dot(n)
-				
+
 				local rd = rayDir*t
 				local s0, s1, s2 = V0 + rd, V1 + rd, V2 + rd
 				local u, v, w, x = s0:Cross(s1):Dot(s2), s2:Cross(s1):Dot(rayDir), rayDir:Cross(s0):Dot(s2), s1:Cross(s0):Dot(rayDir)
@@ -65,9 +74,11 @@ local function fastLinearConvexCast(
 					u, v, w, x = 0, s1:Cross(s2):Dot(n), s2:Cross(s0):Dot(n), s0:Cross(s1):Dot(n)
 					s = v + w + x
 				end
-				
+
 				return t, (u*originB.Position + v*SB0 + w*SB1 + x*SB2)/s, -n
 			end
+			
+			BestAlignment = Alignment
 
 			local uv = V3:Cross(rayDir)
 			if V0:Dot(uv) > 0 then
@@ -85,7 +96,7 @@ local function fastLinearConvexCast(
 			end
 		end
 	end
-	
+
 	return
 end
 
