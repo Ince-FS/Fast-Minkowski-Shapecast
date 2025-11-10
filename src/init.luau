@@ -134,12 +134,18 @@ return function(): World
 						castShape.Transform, castShape.Margin, castShape.localSupport, rayDir,
 						baseShape.Transform, baseShape.Margin, baseShape.localSupport, Vector3.zero
 					)
-
-					if t and t <= rayLen then
-						if not shapecastParams.DepthContact and t >= 0 then continue end
-						
-						if t < bestT then
-							bestI, bestT, bestP, bestN = basePart, t, p, n
+					
+					if shapecastParams.DepthContact then
+						if t and t <= rayLen then
+							if t < bestT then
+								bestI, bestT, bestP, bestN = basePart, t, p, n
+							end
+						end
+					else
+						if t and t >= 0 and t <= rayLen then
+							if t < bestT then
+								bestI, bestT, bestP, bestN = basePart, t, p, n
+							end
 						end
 					end
 
