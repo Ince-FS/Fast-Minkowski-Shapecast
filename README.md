@@ -19,14 +19,21 @@ sphereShape.Radius = 1
 sphereShape.Margin = .01
 
 local shapecastParams: FMShapecast.ShapecastParams = {}
+shapecastParams.FilterDescendantsInstances = {}
+shapecastParams.FilterType = Enum.RaycastFilterType.Include
+shapecastParams.MaxParts = 10
+shapecastParams.RespectCanCollide = true
+shapecastParams.Tolerance = .01
+shapecastParams.CollisionGroup = 'Default'
+shapecastParams.DepthContact = false
 
-local shapecastResult = World:Shapecast(sphereShape, Vector3.new(0, -999, 0), overlapParams)
+local shapecastResult = World:Shapecast(sphereShape, Vector3.new(0, -999, 0), shapecastParams)
 if shapecastResult then
-    print('Distance', shapecastResult.Distance)
-    print('Instance', shapecastResult.Instance)
-    print('Material', shapecastResult.Material)
-    print('Position', shapecastResult.Position)
-    print('Normal', shapecastResult.Normal)
+	print('Distance', shapecastResult.Distance)
+	print('Instance', shapecastResult.Instance)
+	print('Material', shapecastResult.Material)
+	print('Position', shapecastResult.Position)
+	print('Normal', shapecastResult.Normal)
 end
 ```
 
